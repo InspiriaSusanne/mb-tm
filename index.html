@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12d633" />
+    <title>Pimp your ride</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;  
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        
+        /* Gradient Background */
+        body::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 200px; /* Adjust as needed */
+            background: linear-gradient(to top, var(--secondary-color), white);
+            z-index: -2; /* behind triangles but above very-back elements */
+        }
+
+
+        /* Triangles in bottom corners (background decorative images) */
+        .corner-triangle {
+            position: absolute;
+            bottom: 0;
+            width: 20vw;            /* 25% of the viewport width — change this value as needed */
+            max-width: 600px;       /* optional cap so it never gets too big */
+            min-width: 100px;       /* optional floor so it remains usable on tiny screens */
+            aspect-ratio: 5 / 3;    /* preserve image aspect ratio (adjust to your image) */
+            background-repeat: no-repeat;
+            background-size: contain;
+            z-index: -1;            /* sit above gradient but behind content */
+        }
+
+        /* left and right variants */
+        .corner-triangle.left {
+            left: 0;
+            background-image: url('images/Trekanter_left.png');
+            background-position: bottom left;
+        }
+
+        .corner-triangle.right {
+            right: 0;
+            background-image: url('images/Trekanter_right.png');
+            background-position: bottom right;
+        }
+        
+        /* Color Variables */
+        :root {
+            --primary-color: #e21776;
+            --secondary-color: #3db7e4;
+            --tertiary-color: #7AB800;
+            --quaternary-color: #f0ab00;
+            --quinary-color: #6b1f7c;
+        }
+
+        #logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 90px;        /* adjust size as needed */
+            height: auto;
+            z-index: 1000;
+
+        }
+      
+
+        /* Text styling */
+        @font-face {
+            font-family: 'JamesFajardo';
+            src: url('fonts/JamesFajardo.ttf') format('truetype'); /* .ttf file in fonts/ */
+        }
+
+        .textarea {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 6em;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            font-family: 'JamesFajardo', Arial, sans-serif; /* Remove all lines underneath if change the font */
+            padding-bottom: 0;
+            margin-bottom: 0;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            text-transform: uppercase;
+        }
+
+        i {
+            color: var(--primary-color);
+        }
+        
+
+        /* Centered Content */
+        .centerContent {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+
+        /* Page Layout */
+        #container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 20px;
+            height: 90%;
+        }
+
+        #left, #right {
+            padding: 20px;
+        }
+
+        #left {
+            flex: 2;
+            text-align: center;
+        }
+
+        #right {
+            flex: 3; /* Make right side wider */
+            text-align: left;
+        }
+
+
+        /* Webcam Styling square*/
+        #webcam {
+            width: 75%;
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; /* Ensures square cropping */
+            transform: scaleX(-1); /* Start mirrored */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+
+        /* Drag & Drop Zone */
+        #dropZone {
+            border: 2px dashed var(--secondary-color);
+            padding: 15px;
+            margin: 20px auto;
+            width: 60%;
+            text-align: center;
+            background-color: rgba(61, 183, 228, 0.1);
+            cursor: pointer;
+        }
+
+        #dropZone:hover {
+            background-color: rgba(61, 183, 228, 0.2);
+        }
+        
+
+        /* Buttons Styling */
+        button {
+            width: auto;
+            margin: 5px auto;
+            padding: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(61, 183, 228, 0.4);
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #cameraRefreshButton {
+            padding: 5px 10px 5px 10px;
+            font-size: 14px;
+        }
+
+
+        /* Predictions Container */
+        #predictionsContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        /* Prediction Styling */
+        #predictionStatus, #predictionList {
+            padding: 20px;
+            width: 60%;
+            background-color: rgba(61, 183, 228, 0.1); /* Light background for prediction area */
+
+        }
+
+        #predictionList, #thresholdContainer {
+            visibility: hidden;
+        }
+
+        #predictionStatus {
+            text-align: center;
+            color: gray;
+            font-style: italic;
+        }
+
+        
+        /* Prediction List Styling */
+        #predictionList {
+            list-style: none;
+        }
+
+        /* prediction row: label, bar and percent on one line */
+        .prediction-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .prediction-label {
+            flex: 0 0 100px; /* fixed width for labels — adjust as needed */
+            text-align: right; /* align labels nicely */
+            margin-right: 8px;
+        }
+
+        .bar-container {
+            flex: 1 1 auto;
+            background: rgba(0,0,0,0.06);
+            height: 14px;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 400ms ease;
+        }
+        
+        .prediction-percent {
+            flex: 0 0 60px; /* fixed width for percentages */
+            text-align: right;
+        }
+
+
+        /* Confidence threshold styling */
+        #thresholdContainer {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.6rem auto;
+            padding: 8px;
+            width: 80%;
+            max-width: 560px;
+        }
+
+        /* label and percent */
+        #thresholdContainer label {
+            color: var(--primary-color);
+            white-space: nowrap;
+        }
+
+        #thresholdValue {
+            color: #333;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* range slider base */
+        #threshold {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 14px;                      /* same visual height as .bar-container */
+            margin: 0;
+            background: rgba(0,0,0,0.06);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            transition: box-shadow .12s ease;
+        }
+
+        /* WebKit: thumb & track */
+        #threshold::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+            margin-top: -3px; /* center the thumb on the track */
+        }
+
+        /* Camera List Styling - hidden */
+        #availableCameraList {
+            display: none; /* hidden and does not take up space */
+            visibility: hidden;
+        }
+
+ 
+        /* Emoji Burst Styles */
+        #emojiBurstContainer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        pointer-events: none;
+        overflow: visible;
+        z-index: 9999;
+        }
+
+        .emoji-burst {
+        position: absolute;
+        font-size: 2rem;
+        animation: burst 1s ease-out forwards;
+        user-select: none;
+        }
+
+        @keyframes burst {
+        0% {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-300px) scale(1.5) rotate(360deg);
+            opacity: 0;
+        }
+        }
+    </style>
+</head>
+<body>
+ 
+<!-- Logo -->
+<img id="logo" src="images/INSPIRIA_logo.png" alt="INSPIRIA logo">
+
+<!-- Main Title -->
+<h1>Pimp your ride</h1>
+
+<div id="container">
+    
+    <div id="left">
+        
+        <!-- Webcam & Camera Selection -->
+        <div class="textarea">
+            <label for="cameraSelect">Select Camera:</label>
+            <select id="cameraSelect"></select>
+            <button id="cameraRefreshButton" onclick="refreshCameraList()">🔄 Refresh List</button>
+        </div>
+        <br>                
+        <div>
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="mirrorCanvas" hidden></canvas>
+        </div>
+        <!-- <button onclick="toggleMirror()">↔️Mirror Video</button> Mirror Button -->             
+    </div>
+
+    <div id="right">
+        
+        <!-- Instructions -->
+        <h2>Instructions</h2>
+        
+        <div class="textarea">
+            <b>1.</b> Create a model with teachablemachine.withgoogle.com and download as .zip. <br>
+            <b>2.</b> Drag & Drop the .zip onto the next field, or click and select the file.
+        </div>
+        
+        <!-- Drag & Drop Zone -->
+        <div class="centerContent">
+            <div class="textarea" id="dropZone">Drag & Drop Model ZIP Here</div>
+            <input type="file" id="fileInput" style="display:none;" accept=".zip">
+        </div>
+        
+        <div class="textarea">
+            <b>3.</b> Press "Connect to micro:bit" and select your micro:bit. It'll show up as <i>mbed Serial Port (COM7)</i> or similar.
+        </div>
+        
+        <!-- Connect Button -->
+        <div class="centerContent">
+            <button id="connectButton">Connect to micro:bit</button>
+        </div>
+        
+        <div class="textarea">
+            <b>4.</b> Your micro:bit should now receive the class names over USB! Adjust the <i>Confidence threshold</i> to suit your needs.
+        </div>
+        <br>
+
+        <!-- Predictions -->
+        <h2>Predictions</h2>
+
+        <div id="predictionsContainer">
+            
+            <!-- Prediction Status & List -->
+            <div class="textarea" id="predictionStatus">Model not loaded.</div>
+            <div id="predictionList"></div>
+            
+            <!-- Confidence Threshold Slider -->
+            <div class="textarea" id="thresholdContainer">
+                <label for="threshold">Confidence threshold</label>
+                <input type="range" id="threshold" min="0" max="100" step="5" value="50">
+                <span id="thresholdValue">50</span>%
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Hidden Camera List for debugging -->
+<div id="availableCameraList">
+    <h3>Available Cameras</h3>
+    <pre id="deviceList">Loading...</pre>
+</div>
+
+<!-- Footer -->
+<div>
+    <i>Inspired by VilVite's Anders Holm Losnegård's version inspired by Steamlabs make: AI Robots.</i>
+    <h3>v1.1 - 27.10.25</h3>
+</div>
+
+<!-- Decorative triangles (background) -->
+<div class="corner-triangle left" aria-hidden="true"></div>
+<div class="corner-triangle right" aria-hidden="true"></div>
+
+<!-- Emoji Burst Container -->
+<div id="emojiBurstContainer"></div>
+
+
+
+<!-- SCRIPT SECTION -->
+
+<!-- TensorFlow.js & JSZip -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@3.0.0/dist/tf-converter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- Kan og lastes ned og legges i /lib for offline-versjon
+<script src="/lib/tf.min.js"></script>
+<script src="/lib/tf-converter.min.js"></script>
+<script src="/lib/jszip.min.js"></script>
+-->
+
+<script>
+    let model, webcamElement, classNames, writer, lastClassSent = null, currentStream = null;
+    let isMirrored = true; // Track mirroring state
+
+    // Load Model from ZIP using tmImage.loadFromFiles
+    async function handleZipUpload(file) {
+        const zip = new JSZip();
+        const zipData = await zip.loadAsync(file);
+
+        const modelJSONFile = zipData.file("model.json");
+        const metadataJSONFile = zipData.file("metadata.json");
+        const weightsFile = zipData.file("weights.bin");
+
+        if (!modelJSONFile || !metadataJSONFile || !weightsFile) {
+            console.error("❌ Model files missing in ZIP!");
+            return;
+        }
+
+        const modelJSON = await modelJSONFile.async("string");
+        const metadataJSON = await metadataJSONFile.async("string");
+        const weightsData = await weightsFile.async("arraybuffer");
+
+        // Create File objects required by tmImage.loadFromFiles
+        const modelFile = new File([modelJSON], "model.json", { type: "application/json" });
+        const weightsFileObj = new File([weightsData], "weights.bin", { type: "application/octet-stream" });
+        const metadataFile = new File([metadataJSON], "metadata.json", { type: "application/json" });
+
+        try {
+            // Remove "Model not loaded" status, if present
+            const statusEl = document.getElementById("predictionStatus");
+            if (statusEl) statusEl.remove();
+            
+            model = await tmImage.loadFromFiles(modelFile, weightsFileObj, metadataFile);
+            classNames = await model.getClassLabels();
+            console.log("✅ Model loaded successfully with classes:", classNames);
+            document.getElementById("predictionList").style.visibility = "visible";
+            document.getElementById("thresholdContainer").style.visibility = "visible";
+        } catch (error) {
+            console.error("❌ Error loading tmImage model:", error);
+            document.getElementById("predictionStatus").textContent = "❌ Error loading model.";
+        }
+    }
+
+
+    // File Input for selecting ZIP file through a dialog
+    const fileInput = document.getElementById("fileInput");
+
+
+    // Handle file selection
+    fileInput.addEventListener("change", async () => {
+        const file = fileInput.files[0];
+        if (file && file.name.endsWith(".zip")) {
+            console.log("📂 ZIP file selected:", file.name);
+            await handleZipUpload(file);
+        } else {
+            alert("Please select a valid ZIP file.");
+        }
+    });
+
+
+    // Click or Drag & Drop Upload Handler
+    const dropZone = document.getElementById("dropZone");
+    dropZone.addEventListener("click", () => {
+        fileInput.click();
+    });
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = "#e2e6ea";
+    });
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.style.backgroundColor = "#f8f9fa";
+    });
+    dropZone.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = "#f8f9fa";
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith(".zip")) {
+            console.log("📂 ZIP file received:", file.name);
+            await handleZipUpload(file);
+        } else {
+            alert("Please drop a valid ZIP file.");
+        }
+    });
+
+
+    // Request permissions and list cameras
+    async function getCameras() {
+        try {
+            // Request camera access to get full labels
+            await navigator.mediaDevices.getUserMedia({ video: true });
+
+            // Now list devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+            if (videoDevices.length === 0) {
+                document.getElementById("deviceList").textContent = "No cameras found.";
+                return;
+            }
+
+            const select = document.getElementById("cameraSelect");
+            select.innerHTML = ""; // Clear old options
+
+            let deviceInfo = "";
+
+            videoDevices.forEach((device, index) => {
+                const option = document.createElement("option");
+                option.value = device.deviceId;
+                option.textContent = device.label || `Camera ${index + 1}`;
+                select.appendChild(option);
+
+                deviceInfo += `📷 ${device.label || "Unknown Camera"};\nID: ${device.deviceId}\n\n`;
+            });
+
+            document.getElementById("deviceList").textContent = deviceInfo;
+            
+
+            // Auto-select first camera
+            if (videoDevices.length > 0) {
+                setupWebcam(videoDevices[0].deviceId);
+            }
+
+        } catch (error) {
+            console.error("Error accessing cameras:", error);
+            document.getElementById("deviceList").textContent = "⚠️ Cannot access cameras. Check permissions.";
+        }
+    }
+
+
+    // Switch to selected camera
+    async function setupWebcam(deviceId) {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop()); // Stop old stream
+        }
+
+        try {
+            const constraints = { video: { deviceId: { exact: deviceId } } };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            document.getElementById("webcam").srcObject = stream;
+            currentStream = stream;
+            webcamElement = stream;
+        } catch (error) {
+            console.error("Error switching camera:", error);
+        }
+    }
+
+
+    // Listen for dropdown change
+    document.getElementById("cameraSelect").addEventListener("change", (event) => {
+        setupWebcam(event.target.value);
+    });
+
+
+    // Refresh camera list
+    function refreshCameraList() {
+        getCameras();
+    }
+    /*
+    function toggleMirror() {
+        isMirrored = !isMirrored;
+        const videoElement = document.getElementById("webcam");
+        videoElement.style.transform = isMirrored ? "scaleX(-1)" : "scaleX(1)"; // ✅ Flip preview
+    }
+    */
+
+
+    // Convert non-ASCII characters - skandinaviske tegn funker ikke på serieport
+    function convertToASCIICompatible(str) {
+        const replacements = {
+            'Æ': 'AE', 'Ø': 'OE', 'Å': 'AA',
+            'æ': 'ae', 'ø': 'oe', 'å': 'aa',
+        };
+        return str.split('').map(char => replacements[char] || char).join('');
+    }
+
+
+    // Connect to Micro:bit over serial
+    document.getElementById("connectButton").addEventListener("click", async () => {
+        try {
+            document.getElementById("connectButton").innerText = "Requesting port...";
+            const microbit = await navigator.serial.requestPort();
+            document.getElementById("connectButton").innerText = "Awaiting connection...";
+            await microbit.open({ baudRate: 115200 });
+            writer = microbit.writable.getWriter();
+            console.log("✅ Connected to Micro:bit!");
+            document.getElementById("connectButton").innerText = "Connected";
+        } catch (error) {
+            console.error("❌ Error connecting to Micro:bit:", error);
+            document.getElementById("connectButton").innerText = "Try again!";
+        }
+    });
+
+
+    // Send data over serial 
+    async function sendDataToMicrobitUSB(signal) {
+        if (!writer) {
+            console.error("❌ No writer available to send data.");
+            return;
+        }
+        try {
+            const signalToSend = convertToASCIICompatible(signal);
+            console.log("📡 Sending:", signalToSend);
+            for (let i = 0; i < signalToSend.length; i++) {
+                const byte = new TextEncoder().encode(signalToSend[i]);
+                await writer.write(byte);
+            }
+            showEmojiBurst();
+        } catch (error) {
+            console.error("❌ Error sending data:", error);
+        }
+    }
+
+
+    // Update UI with predictions
+    function updateUI(prediction) {
+        const predictionList = document.getElementById("predictionList");
+        predictionList.innerHTML = "";
+
+        // get color variables from :root and build a cycling array
+        const rootStyles = getComputedStyle(document.documentElement);
+        const colorVars = ['--primary-color', '--secondary-color', '--tertiary-color', '--quaternary-color', '--quinary-color'];
+        const colors = colorVars.map(v => rootStyles.getPropertyValue(v).trim() || '#cccccc');
+
+        // sort alphabetically by className (case-insensitive)
+        const sorted = prediction.slice().sort((a, b) =>
+            a.className.toLowerCase().localeCompare(b.className.toLowerCase())
+        );
+
+        sorted.forEach(({ className, probability }, idx) => {
+            const li = document.createElement("li");
+            li.className = "prediction-item textarea";
+
+            const row = document.createElement("div");
+            row.className = "prediction-row";
+
+            // label (colored to match bar)
+            const label = document.createElement("span");
+            label.className = "prediction-label";
+            const color = colors[idx % colors.length];
+            label.textContent = className;
+            label.style.color = color;
+
+            // bar
+            const barContainer = document.createElement("div");
+            barContainer.className = "bar-container";
+
+            const fill = document.createElement("div");
+            fill.className = "bar-fill";
+            fill.style.background = color;
+            fill.style.width = (probability * 100) + "%";
+            fill.setAttribute("role", "progressbar");
+            fill.setAttribute("aria-valuemin", "0");
+            fill.setAttribute("aria-valuemax", "100");
+            fill.setAttribute("aria-valuenow", Math.round(probability * 100));
+
+            barContainer.appendChild(fill);
+
+            // percent
+            const percentSpan = document.createElement("span");
+            percentSpan.className = "prediction-percent";
+            percentSpan.textContent = Math.round(probability * 100) + "%";
+
+            // assemble: label | bar (flex) | percent
+            row.appendChild(label);
+            row.appendChild(barContainer);
+            row.appendChild(percentSpan);
+
+            li.appendChild(row);
+            predictionList.appendChild(li);
+        });
+        document.getElementById("thresholdValue").textContent = document.getElementById("threshold").value;
+    }
+
+
+    // Run Prediction
+    async function predict() {
+        const videoElement = document.getElementById("webcam");
+
+        if (!model || videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
+            console.warn("⚠️ Waiting for webcam...");
+            requestAnimationFrame(predict);
+            return;
+        }
+
+        console.log("🔍 Running prediction...");
+
+        try {
+            const maxPredictions = model.getTotalClasses();
+            const predictionData = await model.predictTopK(videoElement, maxPredictions, isMirrored);
+
+            if (!predictionData || predictionData.length === 0) {
+                console.error("⚠️ Model returned empty prediction");
+                return;
+            }
+
+            updateUI(predictionData);
+
+            // Process prediction results
+            const threshold = document.getElementById("threshold").value / 100;
+            const topPrediction = predictionData[0];
+
+            if (topPrediction.probability >= threshold) {
+                const className = topPrediction.className;
+
+                if (className !== lastClassSent) {
+                    lastClassSent = className;
+                    sendDataToMicrobitUSB(`${className}\n`);
+                }
+            }
+        } catch (error) {
+            console.error("❌ Prediction Error:", error);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 50));
+        requestAnimationFrame(predict);
+    }
+
+
+    // Update slider visual fill and value label
+    function updateThresholdUI() {
+        const input = document.getElementById("threshold");
+        const value = Number(input.value);
+        // paint filled portion with gradient matching prediction bars
+        input.style.background = `linear-gradient(90deg, ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()} ${value}%, rgba(0,0,0,0.06) ${value}%)`;
+        document.getElementById("thresholdValue").textContent = value;
+    }
+
+    // wire up events
+    const thresholdInput = document.getElementById("threshold");
+    if (thresholdInput) {
+        thresholdInput.addEventListener("input", updateThresholdUI);
+        // initialize appearance on load
+        updateThresholdUI();
+    }
+
+
+    // Emoji Burst Animation
+    function showEmojiBurst() {
+        const container = document.getElementById("emojiBurstContainer");
+        const emojis = [
+            // primary: pink/magenta (#e21776)
+            "💖", "💗", "🌸", "🎀", "💕",
+
+            // secondary: blue/cyan (#3db7e4)
+            "🔵", "💧", "🐬", "🌊", "❄️",
+
+            // tertiary: green (#7AB800)
+            "💚", "🌿", "🍏", "🍀", "🥝",
+
+            // accent: yellow/orange (#f0ab00)
+            "💛", "🌟", "🍋", "🍊", "🔥"
+        ];
+        const chosenEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+
+        for (let i = 0; i < 12; i++) {
+            const emoji = document.createElement("div");
+            emoji.className = "emoji-burst";
+            emoji.innerText = chosenEmoji;
+
+            // Random horizontal position (from 10% to 90%)
+            emoji.style.left = Math.random() * 80 + 10 + "%";
+
+            // Slight animation delay for variation
+            emoji.style.animationDelay = (Math.random() * 0.3).toFixed(2) + "s";
+
+            container.appendChild(emoji);
+
+            // Remove after animation completes
+            setTimeout(() => emoji.remove(), 1000);
+        }
+    }
+
+    // Start Everything
+    async function init() {
+        //switchLanguage('no')
+        await getCameras();
+        predict();
+    }
+    init();
+
+</script>
+</body>
+</html>
