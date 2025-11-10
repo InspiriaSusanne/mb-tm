@@ -85,7 +85,7 @@
             src: url('fonts/JamesFajardo.ttf') format('truetype'); /* .ttf file in fonts/ */
         }
 
-        .textarea {
+        .text-block {
             font-size: 20px;
             line-height: 1.5;
         }
@@ -358,7 +358,7 @@
     <div id="left">
         
         <!-- Webcam & Camera Selection -->
-        <div class="textarea">
+        <div class="text-block">
             <label for="cameraSelect">Select Camera:</label>
             <select id="cameraSelect"></select>
             <button id="cameraRefreshButton" onclick="refreshCameraList()">🔄 Refresh List</button>
@@ -376,18 +376,18 @@
         <!-- Instructions -->
         <h2>Instructions</h2>
         
-        <div class="textarea">
+        <div class="text-block">
             <b>1.</b> Create a model with <a href="https://teachablemachine.withgoogle.com" target="_blank">Teachable Machine</a> and download as .zip. <br>
             <b>2.</b> Drag & Drop the .zip onto the next field, or click and select the file.
         </div>
         
         <!-- Drag & Drop Zone -->
         <div class="centerContent">
-            <div class="textarea" id="dropZone">Drag & Drop Model ZIP Here</div>
+            <div class="text-block" id="dropZone">Drag & Drop Model ZIP Here</div>
             <input type="file" id="fileInput" style="display:none;" accept=".zip">
         </div>
         
-        <div class="textarea">
+        <div class="text-block">
             <b>3.</b> Press "Connect to micro:bit" and select your micro:bit. It'll show up as <i>mbed Serial Port (COM7)</i> or similar.
         </div>
         
@@ -396,7 +396,7 @@
             <button id="connectButton">Connect to micro:bit</button>
         </div>
         
-        <div class="textarea">
+        <div class="text-block">
             <b>4.</b> Your micro:bit should now receive the class names over USB! Adjust the <i>Confidence threshold</i> to suit your needs.
         </div>
         <br>
@@ -407,11 +407,11 @@
         <div id="predictionsContainer">
             
             <!-- Prediction Status & List -->
-            <div class="textarea" id="predictionStatus">Model not loaded.</div>
+            <div class="text-block" id="predictionStatus">Model not loaded.</div>
             <div id="predictionList"></div>
             
             <!-- Confidence Threshold Slider -->
-            <div class="textarea" id="thresholdContainer">
+            <div class="text-block" id="thresholdContainer">
                 <label for="threshold">Confidence threshold</label>
                 <input type="range" id="threshold" min="0" max="100" step="5" value="50">
                 <span id="thresholdValue">50</span>%
@@ -687,7 +687,7 @@
 
         sorted.forEach(({ className, probability }, idx) => {
             const li = document.createElement("li");
-            li.className = "prediction-item textarea";
+            li.className = "prediction-item text-block";
 
             const row = document.createElement("div");
             row.className = "prediction-row";
