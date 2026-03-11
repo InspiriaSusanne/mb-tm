@@ -102,8 +102,13 @@
         }
 
         h2 {
+            font-size: 1.8em;
             color: var(--primary-color);
             text-transform: uppercase;
+        }
+        
+        .instruct-h2 {
+            color: var(--secondary-color);
         }
 
         i {
@@ -124,7 +129,7 @@
             display: flex;
             justify-content: space-around;
             align-items: flex-start;
-            padding: 20px;
+            padding: 10px;
             height: 90%;
         }
 
@@ -142,7 +147,21 @@
             text-align: left;
         }
 
+        #instruct-container {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            height: 90%;
+            width: 80%;
+            padding: 10px 0 20px 0;
+            background-color: rgba(61, 183, 228, 0.1);
+        }
 
+        #instruct-left, #instruct-right {
+            text-align: left;
+        }
+
+        
         /* Webcam Styling square*/
         #webcam {
             width: 75%;
@@ -158,9 +177,9 @@
         #dropZone {
             border: 2px dashed var(--secondary-color);
             padding: 15px;
-            margin: 20px auto;
-            width: 60%;
+            width: 100%;
             text-align: center;
+            font-size: 25px;
             background-color: rgba(61, 183, 228, 0.1);
             cursor: pointer;
         }
@@ -175,7 +194,7 @@
             width: auto;
             margin: 5px auto;
             padding: 10px;
-            font-size: 20px;
+            font-size: 25px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
@@ -203,9 +222,8 @@
         /* Prediction Styling */
         #predictionStatus, #predictionList {
             padding: 20px;
-            width: 60%;
+            width: 70%;
             background-color: rgba(61, 183, 228, 0.1); /* Light background for prediction area */
-
         }
 
         #predictionList, #thresholdContainer {
@@ -330,7 +348,7 @@
         .emoji-burst {
         position: absolute;
         font-size: 2rem;
-        animation: burst 1s ease-out forwards;
+        animation: burst 1.5s ease-out forwards;
         user-select: none;
         }
 
@@ -340,7 +358,7 @@
             opacity: 1;
         }
         100% {
-            transform: translateY(-300px) scale(1.5) rotate(360deg);
+            transform: translateY(-500px) scale(1.5) rotate(360deg);
             opacity: 0;
         }
         }
@@ -374,34 +392,6 @@
 
     <div id="right">
         
-        <!-- Instructions -->
-        <h2>Instructions</h2>
-        
-        <div class="text-block">
-            <b>1.</b> Create a model with <a href="https://teachablemachine.withgoogle.com" target="_blank">Teachable Machine</a> and download as .zip. <br>
-            <b>2.</b> Drag & Drop the .zip onto the next field, or click and select the file.
-        </div>
-        
-        <!-- Drag & Drop Zone -->
-        <div class="centerContent">
-            <div class="text-block" id="dropZone">Drag & Drop Model ZIP Here</div>
-            <input type="file" id="fileInput" style="display:none;" accept=".zip">
-        </div>
-        
-        <div class="text-block">
-            <b>3.</b> Press "Connect to micro:bit" and select your micro:bit. It'll show up as <i>mbed Serial Port (COM7)</i> or similar.
-        </div>
-        
-        <!-- Connect Button -->
-        <div class="centerContent">
-            <button id="connectButton">Connect to micro:bit</button>
-        </div>
-        
-        <div class="text-block">
-            <b>4.</b> Your micro:bit should now receive the class names over USB! Adjust the <i>Confidence threshold</i> to suit your needs.
-        </div>
-        <br>
-
         <!-- Predictions -->
         <h2>Predictions</h2>
 
@@ -418,7 +408,26 @@
                 <span id="thresholdValue">50</span>%
             </div>
         </div>
-
+        <div class="centerContent">
+            <div id="instruct-container">
+                <div id="instruct-left">
+                    <h2 class="instruct-h2">Add model</h2>
+                    <!-- Drag & Drop Zone -->
+                    <div class="centerContent">
+                        <div class="text-block" id="dropZone">Add ZIP for Model </div>
+                        <input type="file" id="fileInput" style="display:none;" accept=".zip">
+                    </div>
+                </div>
+                <div id="instruct-right">
+                    <h2 class="instruct-h2">Connect to micro:bit</h2>
+                    <!-- Connect Button -->
+                    <div class="centerContent">
+                        <button id="connectButton">Connect</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
     </div>
 </div>
 
@@ -431,7 +440,7 @@
 <!-- Footer -->
 <div>
     <i>Inspired by VilVite's Anders Holm Losnegård's version inspired by Steamlabs make: AI Robots.</i>
-    <h3>v1.1 - 27.10.25</h3>
+    <h3>v2.0 - 11.03.26</h3>
 </div>
 
 <!-- Decorative triangles (background) -->
@@ -826,7 +835,7 @@
             container.appendChild(emoji);
 
             // Remove after animation completes
-            setTimeout(() => emoji.remove(), 1000);
+            setTimeout(() => emoji.remove(), 1500);
         }
     }
 
